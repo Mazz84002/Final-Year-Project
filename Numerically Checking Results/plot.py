@@ -11,15 +11,16 @@ from sympy import *
 
 L = 1
 mu_0 = constants.mu_0
+eps_0 = constants.epsilon_0
 omega = 10**9 # 1[GHz]
 Z_L = 1e5 # 100k ohms load
 # Defining Gamma
 z_vals = np.linspace(0, 1, 100) # Generate 1000 equally spaced points between 0 and 0.000001
 
 def Gamma(z):
-    return 0.5*z*np.exp(-1e2*z)
+    return 0.5*np.exp(-1e2*z)
 def dGamma_dz(z):
-    return -50*z*np.exp(-1e2*z)+0.5*np.exp(-1e2*z)
+    return -50*np.exp(-1e2*z)
 # defining a from hese values
 def a(z):
     return -2 * dGamma_dz(z) * 1/(1-(Gamma(z))**2)
@@ -45,8 +46,8 @@ def d_xi_dz(z, xi):
     return -a(z)*xi-b(z)*xi**2;
 req_xi = odeint(d_xi_dz, y0=np.sqrt(eps[0].real), t=z_vals, tfirst=True)
 req_eps = np.multiply(req_xi, req_xi)
-plt.plot(z_vals, [abs(val) for val in eps], label='my solution')
-plt.plot(z_vals, [abs(val) for val in req_eps], label='python ode solver')
+plt.plot(z_vals, [abs(val)/eps_0 for val in eps], label='my solution')
+plt.plot(z_vals, [abs(val)/eps_0 for val in req_eps], label='python ode solver')
 plt.legend()
 plt.grid()
 plt.show()
@@ -64,7 +65,7 @@ def dGamma_dt(t):
     return -0.5*(2*np.pi/omega)*np.exp(-(2*np.pi/omega)*t)
 # defining a from hese values
 def a(t):
-    return -2 * dGamma_dz(t) * 1/(1-(Gamma(t))**2)
+    return -2 * dGamma_dt(t) * 1/(1-(Gamma(t))**2)
 def b(t):
     return 4*omega*np.sqrt(mu_0) * (Gamma(t)/(1-(Gamma(t))**2))
 
@@ -89,7 +90,7 @@ eps = [ ( (I[i])/( I[0]*( 1/xi_0  ) + 1j*D[i] ) )**2 for i in range(0, 100) ]
 
 # defining a from hese values
 def a(t):
-    return -2 * dGamma_dz(t) * 1/(1-(Gamma(t))**2)
+    return -2 * dGamma_dt(t) * 1/(1-(Gamma(t))**2)
 def b(t):
     return 4*omega*np.sqrt(mu_0) * (Gamma(t)/(1-(Gamma(t))**2))
 
@@ -99,8 +100,8 @@ def d_xi_dt(t, xi):
 req_xi = odeint(d_xi_dt, y0=xi_0, t=t_vals, tfirst=True)
 req_eps = np.multiply(req_xi, req_xi)
 
-plt.plot(t_vals, [abs(val) for val in eps], label='my solution')
-plt.plot(t_vals, [abs(val) for val in req_eps], label='python ode solver')
+plt.plot(t_vals, [abs(val)/eps_0 for val in eps], label='my solution')
+plt.plot(t_vals, [abs(val)/eps_0 for val in req_eps], label='python ode solver')
 plt.legend()
 plt.grid()
 plt.show()
