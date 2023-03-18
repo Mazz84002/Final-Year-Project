@@ -1,7 +1,7 @@
 %% Derived formula
 
 syms x y z
-L = 1; ZL = 1; w = 0.2; mu_0 = 4*pi*10^(-7);
+L = 0.1; ZL = 1; w = 10^9; mu_0 = 4*pi*10^(-7);
 Gamma = 0.5*exp(-100*z); % 1/(s+1) LPF first order
 
 a = -2 *  diff(Gamma) * 1/(1-(Gamma)^2);
@@ -29,4 +29,4 @@ xi_arr = I_arr./( I_L .* (ZL./sqrt(mu_0)) + D_arr );
 eps_arr = xi_arr.^2;
 
 figure
-plot(z_arr, real(eps_arr))
+plot(z_arr, abs(eps_arr)/(8.854187817e-12))
