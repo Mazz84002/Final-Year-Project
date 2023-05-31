@@ -2,33 +2,38 @@
 
 % input filter
 
+% Define parameters
+fs = 1e8;                % Sampling frequency (Hz)
+fc = 1e7;                % Cutoff frequency (Hz)
+ripple = 0.5;            % Passband ripple (dB)
+filter_order = 6;        % Filter order
 
-[b,a] = besself(5,1e7);
-[Gamma0,w] = freqs((1e-2)*b,a,logspace(4, 10, 1e4));
+% Design Chebyshev type I low-pass filter
+[b, a] = cheby1(filter_order, ripple, fc / (fs/2));
 
-%{
-fc = 300*1e3;
-fs = 1000*1e3;
-[b,a] = cheby1(6,10,fc/(fs/2));
-[Gamma0, w] = freqz(1e-2*b,a,[],fs);
-freqz(b,a,[],fs)
-%}
+% Compute frequency response of the filter
+freq = linspace(0, fs/2, 1000);
+Gamma0 = freqz(b, a, freq, fs);
 
-% phi
+% Plot the filter frequency response
+figure;
+plot(freq, abs(Gamma0));
+title('Chebyshev Type I Low-Pass Filter');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
 
+% Compute impulse response of the filter
 phi = ifft(Gamma0);
 
-
+% Plot the impulse response
+t = linspace(0, length(phi)/fs, length(phi));
 figure;
-subplot(3, 1, 1)
-semilogx(w, 20*log(abs(Gamma0))/log(10))
-title("\Gamma(\omega, 0)")
-ylabel("Magnitude (dB)")
-grid("on")
-subplot(3, 1, 2)
-plot(phi)
-title("\phi(y)")
-grid("on")
+plot(t, real(phi));
+hold on;
+plot(t, imag(phi));
+title('Impulse Response of Chebyshev Type I Low-Pass Filter');
+xlabel('Time (s)');
+ylabel('Magnitude');
 
 
 %% Temporal Synthesis
