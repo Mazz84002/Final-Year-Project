@@ -1,8 +1,8 @@
 % actual values
 clear all;
-wc = (1)*1e9; % 5 GHz
+wc = (1e-2)*1e9; % 5 GHz
 R0 = 50;
-L0 = 8e-9; %[nH/m]
+L0 = 1e-7; %[nH/m]
 
 
 % ----------- Line parameters for prototype low pass filter --------------
@@ -11,7 +11,7 @@ N = 16; L0 = L0; Rs = R0; RL = R0;
 
 % ----------- Test Matrices for w and C ----------
 w = linspace(100, 1e9, 100);
-C = transpose(linspace(0.001, 10000, 3));
+C = transpose(linspace(4e-21, 4e-20, 3));
 
 C_sel = zeros(N, 2);
 Zin_sec = zeros(N+1, length(w));
@@ -40,7 +40,7 @@ for i=1:1:N
     %Plr = (Zin_curr+1).*conj(Zin_curr+1)./(2.*(Zin_curr + conj(Zin_curr)));
 
     plot_Plrs(Plr, Plr_req, w, C, i, gridSize);
-    plot(w, Plr_req, 'x');
+    plot(w, log(Plr_req), 'x');
     hold off;
 
 
@@ -67,7 +67,7 @@ function plot_Plrs(Plr, Plr_req, w, C, i, gridSize)
     
     ylabel('w');
     for j=1:1:rows
-        plot(w, abs(Plr(j, :)));
+        plot(w, log(abs(Plr(j, :))));
         hold on;
     end
 end
