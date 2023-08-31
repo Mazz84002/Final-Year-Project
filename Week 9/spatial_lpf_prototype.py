@@ -6,7 +6,7 @@ from scipy import constants
 # ----------- Actual Line fixed parameters ------------
 c = constants.speed_of_light
 epsilon0 = constants.epsilon_0
-wc = (2e-2)*1e9 # 0.02 [GHz]
+wc = 20e6
 R0 = 50
 
 N = 16
