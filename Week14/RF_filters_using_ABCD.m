@@ -23,21 +23,19 @@ num_of_combinations = 2^num_of_sections;
 l = 4e-6;
 
 input_matrix = create_input_matrix(num_of_sections);
-[L_odd, C_odd, L_even, C_even, Ca, Cm, Cst, R, Gm, Ga] = initialise_parameters(f, fpoints);
+%[L_odd, C_odd, L_even, C_even, Ca, Cm, Cst, R, Gm, Ga] = initialise_parameters(f, fpoints);
 
 
-[L_odd, C_odd, G_odd, R_odd, gamma_o, Z0_odd, theta_odd] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R);
-[L_even, C_even, G_even, R_even, gamma_e, Z0_even, theta_even] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
-[Z0o_off, Z0o_on, Z0e_off, Z0e_on, gamma_o_off, gamma_o_on, gamma_e_off, gamma_e_on, ... 
-    theta_o_off, theta_o_on, theta_e_off, theta_e_on] ... 
-    = Z0_even_odd_on_off(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R);
+%[L_odd, C_odd, G_odd, R_odd, gamma_o, Z0_odd, theta_odd] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R);
+%[L_even, C_even, G_even, R_even, gamma_e, Z0_even, theta_even] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
+
 
 
 % Define the coupled microstrip line
 mline = coupledMicrostripLine;
 
 % Generate S-parameters
-frequencies = logspace(7, 10, 100);
+frequencies = f;
 spar = sparameters(mline, frequencies);
 
 % Extract S-parameter data
@@ -85,10 +83,14 @@ num_of_sections = 8; l = 4e-6;
 [R_even, L_even, G_even, C_even] = Z0Gamma2RLGC(Z0_even, gamma_even);
 
 
+[Z0o_off, Z0o_on, Z0e_off, Z0e_on, gamma_o_off, gamma_o_on, gamma_e_off, gamma_e_on, ... 
+    theta_o_off, theta_o_on, theta_e_off, theta_e_on] ... 
+    = Z0_even_odd_on_off(f, L_odd, L_even, (C_odd+C_even)/2, C_even, C_odd*10, (G_odd-G_even)/2, G_even, R_odd, R_even);
+
 
 
 % Plot both `off` and `on` ABCD parameters
-[Ao_off, Ae_off, Ao_on, Ae_on] = create_on_off_A_matrices(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R, l);
+[Ao_off, Ae_off, Ao_on, Ae_on] = create_on_off_A_matrices(f, L_odd, L_even, (C_odd+C_even)/2, C_even, C_odd*10, (G_odd-G_even)/2, G_even, R_odd, R_even, l);
 plot_full_ABCD_params(f, Ao_off, Ae_off, 'ABCD - off');
 plot_full_ABCD_params(f, Ao_on, Ae_on, 'ABCD - on');
 
@@ -116,6 +118,8 @@ end
 
 % Create a cell array to store S matrices
 S_cell_array = cell(num_of_combinations, 1);
+
+Cst = C_odd*10;
 
 for index = 1:1:num_of_combinations
     S = cat(3, identity_matrices{:}); % initialse S matrix
@@ -249,14 +253,14 @@ function Zc = find_Zc(f, R, L, G, C)
     Zc = sqrt((R + 1i .* w .* L) ./ (G + 1i .* w .* C));
 end
 
-function [Z0o_off, Z0o_on, Z0e_off, Z0e_on, gamma_o_off, gamma_o_on, gamma_e_off, gamma_e_on, theta_o_off, theta_o_on, theta_e_off, theta_e_on] = Z0_even_odd_on_off(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R)
+function [Z0o_off, Z0o_on, Z0e_off, Z0e_on, gamma_o_off, gamma_o_on, gamma_e_off, gamma_e_on, theta_o_off, theta_o_on, theta_e_off, theta_e_on] = Z0_even_odd_on_off(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R_odd, R_even)
     % "Off" state calculation
-    [Lo_off, Co_off, Go_off, Ro_off, gamma_o_off, Z0o_off, theta_o_off] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R);
-    [Le_off, Ce_off, Ge_off, Re_off, gamma_e_off, Z0e_off, theta_e_off] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
+    [Lo_off, Co_off, Go_off, Ro_off, gamma_o_off, Z0o_off, theta_o_off] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R_odd);
+    [Le_off, Ce_off, Ge_off, Re_off, gamma_e_off, Z0e_off, theta_e_off] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R_odd);
     
     % "On" state calculations
-    [Lo_on, Co_on, Go_on, Ro_on, gamma_o_on, Z0o_on, theta_o_on] = odd_mode_params(f, L_odd, Cm + Cst, Ca, Gm, Ga, R);
-    [Le_on, Ce_on, Ge_on, Re_on, gamma_e_on, Z0e_on, theta_e_on] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
+    [Lo_on, Co_on, Go_on, Ro_on, gamma_o_on, Z0o_on, theta_o_on] = odd_mode_params(f, L_odd, Cm + Cst, Ca, Gm, Ga, R_even);
+    [Le_on, Ce_on, Ge_on, Re_on, gamma_e_on, Z0e_on, theta_e_on] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R_even);
 
 
 end
@@ -306,18 +310,18 @@ function [Ao, Ae] = create_A_matrix(gamma0_o, gamma0_e, Z0_odd, Z0_even, l)
 
 end
 
-function [Ao_off, Ae_off, Ao_on, Ae_on] = create_on_off_A_matrices(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R, l)
+function [Ao_off, Ae_off, Ao_on, Ae_on] = create_on_off_A_matrices(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R_odd, R_even, l)
     % Compute odd mode parameters for the "off" state
-    [Lo_off, Co_off, Go_off, Ro_off, gamma_o_off, Z0o_off, theta_o_off] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R);
-    [Le_off, Ce_off, Ge_off, Re_off, gamma_e_off, Z0e_off, theta_e_off] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
+    [Lo_off, Co_off, Go_off, Ro_off, gamma_o_off, Z0o_off, theta_o_off] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R_odd);
+    [Le_off, Ce_off, Ge_off, Re_off, gamma_e_off, Z0e_off, theta_e_off] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R_odd);
     
     % Compute odd mode parameters for the "on" state
-    [Lo_on, Co_on, Go_on, Ro_on, gamma_o_on, Z0o_on, theta_o_on] = odd_mode_params(f, L_odd, Cm + Cst, Ca, Gm, Ga, R);
-    [Le_on, Ce_on, Ge_on, Re_on, gamma_e_on, Z0e_on, theta_e_on] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
+    [Lo_on, Co_on, Go_on, Ro_on, gamma_o_on, Z0o_on, theta_o_on] = odd_mode_params(f, L_odd, Cm + Cst, Ca, Gm, Ga, R_even);
+    [Le_on, Ce_on, Ge_on, Re_on, gamma_e_on, Z0e_on, theta_e_on] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R_even);
 
     [Z0o_off, Z0o_on, Z0e_off, Z0e_on, gamma_o_off, gamma_o_on, gamma_e_off, gamma_e_on, ... 
     theta_o_off, theta_o_on, theta_e_off, theta_e_on] ... 
-    = Z0_even_odd_on_off(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R);
+    = Z0_even_odd_on_off(f, L_odd, L_even, Cm, Ca, Cst, Gm, Ga, R_odd, R_even);
 
     % Create Z matrices for "off" and "on" states (assuming create_Z_matrix is a valid function)
     [Ao_off, Ae_off] = create_A_matrix(gamma_o_off, gamma_e_off, Z0o_off, Z0e_off, l);
