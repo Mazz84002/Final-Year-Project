@@ -23,64 +23,11 @@ num_of_combinations = 2^num_of_sections;
 l = 4e-6;
 
 input_matrix = create_input_matrix(num_of_sections);
-%[L_odd, C_odd, L_even, C_even, Ca, Cm, Cst, R, Gm, Ga] = initialise_parameters(f, fpoints);
+[L_odd, C_odd, L_even, C_even, Ca, Cm, Cst, R, Gm, Ga] = initialise_parameters(f, fpoints);
 
 
-%[L_odd, C_odd, G_odd, R_odd, gamma_o, Z0_odd, theta_odd] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R);
-%[L_even, C_even, G_even, R_even, gamma_e, Z0_even, theta_even] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
-
-
-
-% Define the coupled microstrip line
-mline = coupledMicrostripLine;
-
-% Generate S-parameters
-frequencies = f;
-spar = sparameters(mline, frequencies);
-
-% Extract S-parameter data
-sparam_data = spar.Parameters;
-
-% Initialize a 3D array to store the S-parameter data
-num_ports = size(sparam_data, 1);
-num_freq = size(sparam_data, 3);
-sparam_array = zeros(num_ports, num_ports, num_freq);
-
-% Convert S-parameters to a 3D array
-for k = 1:num_freq
-    sparam_array(:, :, k) = sparam_data(:, :, k);
-end
-
-% Initialize matrices for SA and SB
-SA = zeros(2, 2, num_freq);
-SB = zeros(2, 2, num_freq);
-
-% Extract SA and SB from sparam_array
-for k = 1:num_freq
-    SA(:, :, k) = sparam_array(1:2, 1:2, k);
-    SB(:, :, k) = sparam_array(3:4, 3:4, k);
-end
-
-S_odd = SA + SB;
-S_even = SA - SB;
-
-% Convert S_odd and S_even to ABCD matrices
-ABCD_odd = zeros(2, 2, num_freq);
-ABCD_even = zeros(2, 2, num_freq);
-
-for k = 1:num_freq
-    ABCD_odd(:, :, k) = s2abcd(S_odd(:, :, k));
-    ABCD_even(:, :, k) = s2abcd(S_even(:, :, k));
-end
-
-num_of_sections = 8; l = 4e-6;
-
-[Z0_odd, gamma_odd] = ABCD2Z0Gamma(frequencies, l*num_of_sections, ABCD_odd);
-[Z0_even, gamma_even] = ABCD2Z0Gamma(frequencies, l*num_of_sections, ABCD_even);
-
-
-[R_odd, L_odd, G_odd, C_odd] = Z0Gamma2RLGC(Z0_odd, gamma_odd);
-[R_even, L_even, G_even, C_even] = Z0Gamma2RLGC(Z0_even, gamma_even);
+[L_odd, C_odd, G_odd, R_odd, gamma_o, Z0_odd, theta_odd] = odd_mode_params(f, L_odd, Cm, Ca, Gm, Ga, R);
+[L_even, C_even, G_even, R_even, gamma_e, Z0_even, theta_even] = even_mode_params(f, L_even, Cm, Ca, Gm, Ga, R);
 
 
 [Z0o_off, Z0o_on, Z0e_off, Z0e_on, gamma_o_off, gamma_o_on, gamma_e_off, gamma_e_on, ... 
